@@ -41,7 +41,7 @@ import time
 from absl import flags
 import numpy as np
 import scipy.sparse as sparse
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
 import tensorflow_probability as tfp
 
 
@@ -104,9 +104,9 @@ def build_input_pipeline(data_dir,
   author_indices = np.load(
       os.path.join(data_dir, "author_indices.npy")).astype(np.int32) 
   num_authors = np.max(author_indices + 1)
-  author_map = np.loadtxt(os.path.join(data_dir, "author_map.txt"),
-                          dtype=str, 
-                          delimiter="\n")
+  author_map = np.genfromtxt(os.path.join(data_dir, "author_map.txt"),
+                          dtype=str,
+                             delimiter='&')
   # Shuffle data.
   documents = random_state.permutation(num_documents)
   shuffled_author_indices = author_indices[documents]
@@ -133,10 +133,9 @@ def build_input_pipeline(data_dir,
       (documents, shuffled_counts, shuffled_author_indices))
   batches = dataset.repeat().batch(batch_size).prefetch(batch_size)
   iterator = batches.make_one_shot_iterator()
-  vocabulary = np.loadtxt(os.path.join(data_dir, "vocabulary.txt"), 
-                          dtype=str, 
-                          delimiter="\n",
-                          comments="<!-")
+  vocabulary = np.genfromtxt(os.path.join(data_dir, "vocabulary.txt"),
+                          dtype=str,
+                          delimiter="&")
 
   total_counts_per_author = np.bincount(
       author_indices, 
